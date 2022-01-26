@@ -1,0 +1,21 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ArrayOfJob xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Job>
+    <Title>Job 1</Title>
+    <Date>2021-10-17T12:21:58.518703+02:00</Date>
+    <UpdateOn>2021-10-17T12:21:58.5227639+02:00</UpdateOn>
+    <Description>Description 1</Description>
+  </Job>
+  <Job>
+    <Title>Job 2</Title>
+    <Date>2021-10-17T12:21:58.5228112+02:00</Date>
+    <UpdateOn>2021-10-17T12:21:58.5228118+02:00</UpdateOn>
+    <Description>Description 2</Description>
+  </Job>
+  <Job>
+    <Title>Job 3</Title>
+    <Date>2021-10-17T12:21:58.5228121+02:00</Date>
+    <UpdateOn>2021-10-17T12:21:58.5228122+02:00</UpdateOn>
+    <Description>Description 3</Description>
+  </Job>
+</ArrayOfJob>
