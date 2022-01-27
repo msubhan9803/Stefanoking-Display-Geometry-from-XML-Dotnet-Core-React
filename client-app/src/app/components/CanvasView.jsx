@@ -5,95 +5,8 @@ import { a, useSpring } from "@react-spring/three";
 import xml2js from 'xml2js';
 import degrees_to_radians from '../../helpers/convertDegToRad.js';
 
-
-const xmlString = `<?xml version="1.0"?>
-<Sheet material = "inox" thickness = "1.2" version ="1" dimx = "1200" dimy = "1200">
-
-  <Parts>
-
-        <Part code = "PartTest01" order = "Order1" customer = "Customer1" deliverydate = "28/01/2022">
-
-            <!-- Geometric info of pieces i want to display -->
-            <Contours>
-                <Contour external = "1">
-                    <Path>
-                        <Line>
-                            <Start X = "0" Y ="0" Z = "0"/>
-                            <End X = "50" Y ="0" Z = "0"/>
-                        </Line>
-                        <Line>
-                            <Start X = "50" Y ="0" Z = "0"/>
-                            <End X = "50" Y ="50" Z = "0"/>
-                        </Line>
-                        <Line>
-                            <Start X = "50" Y ="50" Z = "0"/>
-                            <End X = "0" Y ="50" Z = "0"/>
-                        </Line>
-                        <Line>
-                            <Start X = "0" Y ="50" Z = "0"/>
-                            <End X = "0" Y ="0" Z = "0"/>
-                        </Line>
-                    </Path>
-                </Contour>
-
-                <Contour external = "0">
-                    <Path>
-                        <Arc>
-                          <Center X = "5" Y ="5" Z = "0"/>
-                          <Radius>10.0</Radius>
-                          <Angle>360.0</Angle>
-                        </Arc>
-                    </Path>
-                </Contour>
-            </Contours>
-        </Part>
-
-        <Part code = "PartTest01" order = "Order1" customer = "Customer1" deliverydate = "28/01/2022">
-
-        <!-- Geometric info of pieces i want to display -->
-        <Contours>
-            <Contour external = "1">
-                <Path>
-                    <Line>
-                        <Start X = "10" Y ="10" Z = "0"/>
-                        <End X = "40" Y ="10" Z = "0"/>
-                    </Line>
-                    <Line>
-                        <Start X = "40" Y ="10" Z = "0"/>
-                        <End X = "40" Y ="40" Z = "0"/>
-                    </Line>
-                    <Line>
-                        <Start X = "40" Y ="40" Z = "0"/>
-                        <End X = "10" Y ="10" Z = "0"/>
-                    </Line>
-                </Path>
-            </Contour>
-
-            <Contour external = "0">
-                <Path>
-                    <Arc>
-                      <Center X = "25" Y ="25" Z = "0"/>
-                      <Radius>5.0</Radius>
-                      <Angle>180.0</Angle>
-                    </Arc>
-                </Path>
-            </Contour>
-        </Contours>
-    </Part>
-
-  </Parts>
-  
-  <PartReferences>
-      <PartReference PartCode = "PartTest01"   posx = "100" posy = "100" angle = "0" mirror = "0"></PartReference>
-      <PartReference PartCode = "PartTest01"   posx = "700" posy = "700" angle = "30" mirror = "0"></PartReference>
-      <PartReference PartCode = "PartTest02"   posx = "300" posy = "300" angle = "0" mirror = "0"></PartReference>
-      <PartReference PartCode = "PartTest03"   posx = "300" posy = "600" angle = "0" mirror = "0"></PartReference>
-  </PartReferences>
-
-</Sheet>
-`;
-
-function Line({ start, end }) {
+function Line({ start, end, center }) {
+  console.log("center: ", center)
   const ref = useRef();
   useLayoutEffect(() => {
     ref.current.geometry.setFromPoints(
@@ -102,10 +15,31 @@ function Line({ start, end }) {
   }, [start, end]);
 
   return (
+    // <>
+    //   {
+    //     center ?
+    //       <mesh visible userData={{ test: "hello" }} position={[
+    //         center.X,
+    //         center.Y,
+    //         center.Z
+    //       ]}>
+    //         <line ref={ref}>
+    //           <bufferGeometry />
+    //           <lineBasicMaterial color="hotpink" />
+    //         </line>
+    //       </mesh>
+    //       :
+    //       <line ref={ref}>
+    //         <bufferGeometry />
+    //         <lineBasicMaterial color="hotpink" />
+    //       </line>
+    //   }
+    // </>
     <line ref={ref}>
       <bufferGeometry />
       <lineBasicMaterial color="hotpink" />
     </line>
+
   );
 }
 
@@ -126,7 +60,6 @@ function Sphere() {
 
 function CircleGeometry(props) {
   const { radius, center, angle } = props;
-  console.log("props: ", props)
 
   return (
     <mesh visible userData={{ test: "hello" }} position={[
@@ -178,86 +111,235 @@ export default function CanvasView() {
   };
 
   useEffect(() => {
+    const url = 'http://localhost:5000/Example';
+    var xhr = new XMLHttpRequest;
+    xhr.open('GET', url);
+
+    // If specified, responseType must be empty string or "document"
+    xhr.responseType = 'document';
+
+    // Force the response to be parsed as XML
+    xhr.overrideMimeType('text/xml');
+
+    xhr.onload = function () {
+      if (xhr.readyState === xhr.DONE && xhr.status === 200) {
+        // console.log(xhr.response);
+        // console.log(xhr.responseXML);
+        const serializer = new XMLSerializer();
+        const xmlStr = serializer.serializeToString(xhr.responseXML);
+
+        parseFile(xmlStr)
+      }
+    };
+
+    xhr.send();
+  }, []);
+
+  const parseFile = xmlString => {
     var parser = new xml2js.Parser();
 
     parser.parseStringPromise(xmlString).then(function (result) {
       console.dir(result);
       let parts = result["Sheet"]["Parts"][0]["Part"];
 
-      let tempList = [];
+      let tempList = [];// contains parsed each geometry individual
+      let shapeList = []; // contains parsed shapes
+      let contoursList = []; // contains parsed shapes with in each contour
       for (let contoursIndex = 0; contoursIndex < parts.length; contoursIndex++) {
         const contours = parts[contoursIndex]["Contours"];
 
         for (let contourIndex = 0; contourIndex < contours.length; contourIndex++) {
           const contour = contours[contourIndex]["Contour"];
+          console.log("contour: " + contourIndex, contour)
+          let contourArr = [];
 
           for (let shapeIndex = 0; shapeIndex < contour.length; shapeIndex++) {
             const shape = contour[shapeIndex]["Path"][0];
-            console.log("shape: ", shape)
-
-            if (Object.keys(shape).every(val => val == "Line")) {
-              for (let lineIndex = 0; lineIndex < shape["Line"].length; lineIndex++) {
-                const line = shape["Line"][lineIndex];
-                let temp = {
-                  type: "line",
-                  start: {
-                    X: line["Start"][0]['$']['X'],
-                    Y: line["Start"][0]['$']['Y'],
-                    Z: line["Start"][0]['$']['Z'],
-                  },
-                  end: {
-                    X: line["End"][0]['$']['X'],
-                    Y: line["End"][0]['$']['Y'],
-                    Z: line["End"][0]['$']['Z'],
+            console.log("shape: " + shapeIndex, shape)
+            let shapeArr = []
+            if (shapeIndex == 0) {
+              if (Object.keys(shape).every(val => val == "Line")) {
+                for (let lineIndex = 0; lineIndex < shape["Line"].length; lineIndex++) {
+                  const line = shape["Line"][lineIndex];
+                  let temp = {
+                    type: "line",
+                    start: {
+                      X: line["Start"][0]['$']['X'],
+                      Y: line["Start"][0]['$']['Y'],
+                      Z: line["Start"][0]['$']['Z'],
+                    },
+                    end: {
+                      X: line["End"][0]['$']['X'],
+                      Y: line["End"][0]['$']['Y'],
+                      Z: line["End"][0]['$']['Z'],
+                    }
                   }
-                }
 
-                tempList.push(temp)
+                  shapeArr.push(temp)
+                  tempList.push(temp)
+                }
+              } else {
+                for (let arcIndex = 0; arcIndex < shape["Arc"].length; arcIndex++) {
+                  const arc = shape["Arc"][arcIndex];
+                  let temp = {
+                    type: "arc",
+                    angle: parseFloat(arc["Angle"][0]),
+                    center: {
+                      X: arc["Center"][0]['$']['X'],
+                      Y: arc["Center"][0]['$']['Y'],
+                      Z: arc["Center"][0]['$']['Z'],
+                    },
+                    radius: parseFloat(arc["Radius"][0])
+                  }
+
+                  shapeArr.push(temp)
+                  tempList.push(temp)
+                }
               }
-            } else {
-              for (let arcIndex = 0; arcIndex < shape["Arc"].length; arcIndex++) {
-                const arc = shape["Arc"][arcIndex];
-                let temp = {
-                  type: "arc",
-                  angle: parseFloat(arc["Angle"][0]),
-                  center: {
-                    X: arc["Center"][0]['$']['X'],
-                    Y: arc["Center"][0]['$']['Y'],
-                    Z: arc["Center"][0]['$']['Z'],
-                  },
-                  radius: parseFloat(arc["Radius"][0])
-                }
+            } else if (shapeIndex > 0) {
+              // Here we will calculate center point of child shapes
 
-                tempList.push(temp)
+              let parentShape = null;
+              console.log("here shapeList: ", shapeList)
+              for (let index = 0; index < shapeList.length; index++) {
+                const shape = shapeList[index];
+                if (
+                  shape.contourIndex == contourIndex &&
+                  shape.contoursIndex == contoursIndex &&
+                  shape.shapeIndex == (shapeIndex - 1)
+                ) {
+                  parentShape = shape;
+                }
+              }
+              let parentCoordinates = [];
+              for (let index = 0; index < parentShape.list.length; index++) {
+                const element = parentShape.list[index];
+                if (element.type == "line") {
+                  parentCoordinates.push([
+                    parseInt(element.start.X),
+                    parseInt(element.start.Y),
+                    parseInt(element.start.Z),
+                  ])
+                  parentCoordinates.push([
+                    parseInt(element.end.X),
+                    parseInt(element.end.Y),
+                    parseInt(element.end.Z),
+                  ])
+                } else {
+                  parentCoordinates.push([
+                    parseInt(element.center.X),
+                    parseInt(element.center.Y),
+                    parseInt(element.center.Z),
+                  ])
+                }
+              }
+              console.log("parentCoordinates: ", parentCoordinates)
+              let parentCenterCoordinates = center(parentCoordinates)
+
+              if (Object.keys(shape).every(val => val == "Line")) {
+                for (let lineIndex = 0; lineIndex < shape["Line"].length; lineIndex++) {
+                  const line = shape["Line"][lineIndex];
+                  let startX = parseInt(line["Start"][0]['$']['X']);
+                  let startY = parseInt(line["Start"][0]['$']['Y']);
+                  let startZ = parseInt(line["Start"][0]['$']['Z']);
+                  let endX = parseInt(line["End"][0]['$']['X']);
+                  let endY = parseInt(line["End"][0]['$']['Y']);
+                  let endZ = parseInt(line["End"][0]['$']['Z']);
+
+                  console.log('startX: ', startX)
+                  console.log('endX: ', endX)
+                  let distanceX = (startX + endX) / 2;
+                  let distanceY = (startY + endY) / 2;
+                  let distanceZ = (startZ + endZ) / 2;
+
+                  let temp = {
+                    type: "line",
+                    // start: {
+                    //   X: parseInt(parentCenterCoordinates[0]) - distanceX,
+                    //   Y: parseInt(parentCenterCoordinates[1]) - distanceY,
+                    //   Z: parseInt(parentCenterCoordinates[2]) - distanceZ,
+                    // },
+                    // end: {
+                    //   X: parseInt(parentCenterCoordinates[0]) + distanceX,
+                    //   Y: parseInt(parentCenterCoordinates[1]) + distanceY,
+                    //   Z: parseInt(parentCenterCoordinates[2]) + distanceZ,
+                    // },
+                    start: {
+                      X: line["Start"][0]['$']['X'],
+                      Y: line["Start"][0]['$']['Y'],
+                      Z: line["Start"][0]['$']['Z'],
+                    },
+                    end: {
+                      X: line["End"][0]['$']['X'],
+                      Y: line["End"][0]['$']['Y'],
+                      Z: line["End"][0]['$']['Z'],
+                    },
+                    center: {
+                      X: parentCenterCoordinates[0],
+                      Y: parentCenterCoordinates[1],
+                      Z: parentCenterCoordinates[2],
+                    }
+                  }
+
+                  console.log("temp: ", temp)
+
+                  shapeArr.push(temp)
+                  tempList.push(temp)
+                }
+              } else {
+                for (let arcIndex = 0; arcIndex < shape["Arc"].length; arcIndex++) {
+                  const arc = shape["Arc"][arcIndex];
+                  let temp = {
+                    type: "arc",
+                    angle: parseFloat(arc["Angle"][0]),
+                    center: {
+                      X: parentCenterCoordinates[0],
+                      Y: parentCenterCoordinates[1],
+                      Z: parentCenterCoordinates[2],
+                    },
+                    radius: parseFloat(arc["Radius"][0])
+                  }
+
+                  shapeArr.push(temp)
+                  tempList.push(temp)
+                }
               }
             }
+
+            shapeList.push({
+              contourIndex: contourIndex,
+              contoursIndex: contoursIndex,
+              shapeIndex: shapeIndex,
+              list: shapeArr
+            })
+            contourArr.push(shapeArr)
           }
+
+          contoursList.push(contourArr)
         }
       }
 
-
-      // console.log("tempList: ", tempList)
+      console.log("contoursList: ", contoursList)
+      console.log("shapeList: ", shapeList)
 
       setGeometryList(tempList)
     }).catch(function (err) {
       // Failed
     });
-  }, []);
-
-
+  }
 
   return (
-    <div style={{ position: "relative", width: 1000, height: 1000 }}>
-      <Canvas orthographic camera={{ zoom: 10, position: [0, 0, 100] }}>
+    <div style={{ position: "relative", width: 1200, height: 1200, float: "left" }}>
+      <Canvas orthographic camera={{ zoom: 3 }} style={{ backgroundColor: "white", float: "left", width: 600, height: 600 }}>
         {/* <ambientLight intensity={0.5} />
-        <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} />
-        <pointLight position={[-10, -10, -10]} /> */}
+      <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} />
+      <pointLight position={[-10, -10, -10]} /> */}
         {/* <Line start={[2, 0, 0]} end={[10, 0, 0]} />
-        <Line start={[2, 0, 0]} end={[2, 2, 0]} /> */}
+      <Line start={[2, 0, 0]} end={[2, 2, 0]} /> */}
 
         {/* <a.mesh>
-        <sphereBufferGeometry start={[2, 0, 0]} attach="geometry" args={[1, 32, 32]} />
-      </a.mesh> */}
+      <sphereBufferGeometry start={[2, 0, 0]} attach="geometry" args={[1, 32, 32]} />
+    </a.mesh> */}
 
         {/* <Sphere /> */}
         {/* <CircleGeometry /> */}
@@ -267,19 +349,35 @@ export default function CanvasView() {
             <>
               {
                 child.type == "line" ?
-                  <Line
-                    key={index}
-                    start={[
-                      child.start.X,
-                      child.start.Y,
-                      child.start.Z
-                    ]}
-                    end={[
-                      child.end.X,
-                      child.end.Y,
-                      child.end.Z
-                    ]}
-                  />
+                  child.center ?
+                    <Line
+                      key={index}
+                      start={[
+                        child.start.X,
+                        child.start.Y,
+                        child.start.Z
+                      ]}
+                      end={[
+                        child.end.X,
+                        child.end.Y,
+                        child.end.Z
+                      ]}
+                      center={child.center}
+                    />
+                    :
+                    <Line
+                      key={index}
+                      start={[
+                        child.start.X,
+                        child.start.Y,
+                        child.start.Z
+                      ]}
+                      end={[
+                        child.end.X,
+                        child.end.Y,
+                        child.end.Z
+                      ]}
+                    />
                   :
                   <CircleGeometry
                     key={index}
