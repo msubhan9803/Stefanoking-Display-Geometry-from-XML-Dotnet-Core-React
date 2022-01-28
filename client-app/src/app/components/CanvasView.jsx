@@ -1,12 +1,13 @@
-import * as THREE from "three";
 import React, { useLayoutEffect, useRef, useState, useEffect } from "react";
+import * as THREE from "three";
 import { Canvas } from "@react-three/fiber";
 import { a, useSpring } from "@react-spring/three";
 import xml2js from 'xml2js';
 import degrees_to_radians from '../../helpers/convertDegToRad.js';
+import { useThree } from '@react-three/fiber';
+import './style.css';
 
 function Line({ start, end, center }) {
-  console.log("center: ", center)
   const ref = useRef();
   useLayoutEffect(() => {
     ref.current.geometry.setFromPoints(
@@ -83,6 +84,33 @@ export default function CanvasView() {
   const NUM = 30;
   const spheres = new Array(NUM).fill();
   const [geometryList, setGeometryList] = useState([]);
+  const [viewPortState, setViewPortState] = useState({
+    center: {
+      X: 0,
+      Y: 0
+    },
+    zoom: 0
+  });
+  const [sizes, setSizes] = useState({
+    width: 100,
+    height: 100
+  });
+
+  // const {
+  //   gl, // WebGL renderer
+  //   scene, // Default scene
+  //   camera, // Default camera
+  //   raycaster, // Default raycaster
+  //   size, // Bounds of the view (which stretches 100% and auto-adjusts)
+  //   viewport, // Bounds of the viewport in 3d units + factor (size/viewport)
+  //   aspect, // Aspect ratio (size.width / size.height)
+  //   mouse, // Current, centered, normalized 2D mouse coordinates
+  //   // raycaster, // Intternal raycaster instance
+  //   clock, // THREE.Clock (useful for useFrame deltas)
+  //   invalidate, // Invalidates a single frame (for <Canvas invalidateFrameloop />)
+  //   intersect, // Calls onMouseMove handlers for objects underneath the cursor
+  //   setDefaultCamera, // Sets the default camera
+  // } = useThree();
 
   var coords = [
     [0, 0, 0],
@@ -110,7 +138,18 @@ export default function CanvasView() {
     return [(minX + maxX) / 2, (minY + maxY) / 2, (minZ + maxZ) / 2];
   };
 
+  // const setCamera = () => {
+  //   camera.top = (.95*camera.top);
+  //   camera.bottom = (.95*camera.bottom);
+  //   camera.left = (.95*camera.left);
+  //   camera.right = (.95*camera.right);
+  // }
+
   useEffect(() => {
+    // Setting camera
+    // setCamera();
+
+    // Load XML
     const url = 'http://localhost:5000/Example';
     var xhr = new XMLHttpRequest;
     xhr.open('GET', url);
@@ -139,7 +178,6 @@ export default function CanvasView() {
     var parser = new xml2js.Parser();
 
     parser.parseStringPromise(xmlString).then(function (result) {
-      console.dir(result);
       let parts = result["Sheet"]["Parts"][0]["Part"];
 
       let tempList = [];// contains parsed each geometry individual
@@ -321,74 +359,160 @@ export default function CanvasView() {
 
       console.log("contoursList: ", contoursList)
       console.log("shapeList: ", shapeList)
+      console.log("tempList: ", tempList)
 
       setGeometryList(tempList)
+
+      let x = [];
+      let y = [];
+      let z = [];
+      for (let index = 0; index < tempList.length; index++) {
+        const elem = tempList[index];
+        if (elem.type == "line") {
+          x.push(parseFloat(elem.start.X))
+          x.push(parseFloat(elem.end.X))
+          y.push(parseFloat(elem.start.Y))
+          y.push(parseFloat(elem.end.Y))
+          z.push(parseFloat(elem.start.Z))
+          z.push(parseFloat(elem.end.Z))
+        } else {
+          x.push(parseFloat(elem.center.X))
+          y.push(parseFloat(elem.center.Y))
+          z.push(parseFloat(elem.center.Z))
+        }
+      }
+      let xMin = arrayMin(x)
+      let xMax = arrayMax(x)
+
+      let yMin = arrayMin(y)
+      let yMax = arrayMax(y)
+
+      let zMin = arrayMin(z)
+      let zMax = arrayMax(z)
+      let zoom = parseFloat((sizes.width / (xMax + 5)).toFixed(2));
+
+      let temp = {
+        center: {
+          X: (xMin + xMax) > 0 ? -(xMin + xMax) / 2 : (xMin + xMax) / 2,
+          Y: (yMin + yMax) > 0 ? -(yMin + yMax) / 2 : (yMin + yMax) /2
+        },
+        zoom: zoom
+      }
+      // Set Min max
+      setViewPortState(temp);
     }).catch(function (err) {
       // Failed
     });
   }
 
+  // const sizes = {
+  //   width: 300,
+  //   height: 300
+  // };
+
+  const arrayMin = (arr) => {
+    return arr.reduce((p, v) => {
+      return (p < v ? p : v);
+    });
+  }
+
+  const arrayMax = (arr) => {
+    return arr.reduce((p, v) => {
+      return (p > v ? p : v);
+    });
+  }
+
   return (
-    <div style={{ position: "relative", width: 1200, height: 1200, float: "left" }}>
-      <Canvas orthographic camera={{ zoom: 3 }} style={{ backgroundColor: "white", float: "left", width: 600, height: 600 }}>
+    <div className="parent" style={{
+      height: sizes.height,
+      width: sizes.width
+    }}>
+      {/* <Canvas orthographic camera={{ zoom: 10 }} style={{ backgroundColor: "white" }}> */}
+      <Canvas orthographic camera={{ zoom: viewPortState.zoom }} className="canvas">
         {/* <ambientLight intensity={0.5} />
       <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} />
       <pointLight position={[-10, -10, -10]} /> */}
-        {/* <Line start={[2, 0, 0]} end={[10, 0, 0]} />
-      <Line start={[2, 0, 0]} end={[2, 2, 0]} /> */}
+        {/* <Line start={[0, 0, 0]} end={[100, 0, 0]} />
+        <Line start={[0, 0, 0]} end={[0, 100, 0]} />
 
-        {/* <a.mesh>
-      <sphereBufferGeometry start={[2, 0, 0]} attach="geometry" args={[1, 32, 32]} />
-    </a.mesh> */}
+        <a.mesh>
+          <sphereBufferGeometry start={[0, 0, 0]} attach="geometry" args={[10, 32, 32]} />
+          <CircleGeometry
+            radius={5}
+            center={{
+              X: 0,
+              Y: 0,
+              Z: 0
+            }}
+            angle={degrees_to_radians(360)}
+          />
+        </a.mesh> */}
 
         {/* <Sphere /> */}
         {/* <CircleGeometry /> */}
-
-        {
-          geometryList.map((child, index) => (
-            <>
-              {
-                child.type == "line" ?
-                  child.center ?
-                    <Line
-                      key={index}
-                      start={[
-                        child.start.X,
-                        child.start.Y,
-                        child.start.Z
-                      ]}
-                      end={[
-                        child.end.X,
-                        child.end.Y,
-                        child.end.Z
-                      ]}
-                      center={child.center}
-                    />
+        {/* <perspectiveCamera
+          fov={50}
+          aspect={sizes.width / sizes.height}
+          // change position of camera
+          position={[0, 0, 0]}
+          aspect={10}
+          near={0.1}
+          far={100}
+        > */}
+        <mesh visible
+        position={[
+          viewPortState.center.X,
+          viewPortState.center.Y,
+          0
+        ]}
+        >
+          {
+            geometryList.map((child, index) => (
+              <>
+                {
+                  child.type == "line" ?
+                    child.center ?
+                      <Line
+                        key={index}
+                        start={[
+                          child.start.X,
+                          child.start.Y,
+                          child.start.Z
+                        ]}
+                        end={[
+                          child.end.X,
+                          child.end.Y,
+                          child.end.Z
+                        ]}
+                        center={child.center}
+                      />
+                      :
+                      <Line
+                        key={index}
+                        start={[
+                          child.start.X,
+                          child.start.Y,
+                          child.start.Z
+                        ]}
+                        end={[
+                          child.end.X,
+                          child.end.Y,
+                          child.end.Z
+                        ]}
+                      />
                     :
-                    <Line
+                    <CircleGeometry
                       key={index}
-                      start={[
-                        child.start.X,
-                        child.start.Y,
-                        child.start.Z
-                      ]}
-                      end={[
-                        child.end.X,
-                        child.end.Y,
-                        child.end.Z
-                      ]}
+                      radius={child.radius}
+                      center={child.center}
+                      angle={degrees_to_radians(child.angle)}
                     />
-                  :
-                  <CircleGeometry
-                    key={index}
-                    radius={child.radius}
-                    center={child.center}
-                    angle={degrees_to_radians(child.angle)}
-                  />
-              }
-            </>
-          ))
-        }
+                }
+              </>
+            ))
+          }
+        </mesh>
+        {/* </perspectiveCamera> */}
       </Canvas >
     </div>
   );

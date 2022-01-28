@@ -1,34 +1,37 @@
 import React from 'react';
 import { Button, Card, Image } from 'semantic-ui-react';
 import { Job } from '../../../app/models/job';
-
+import CanvasView from '../../../app/components/CanvasView.jsx';
 interface Props {
-    job:Job;
+    job: Job;
     cancelSelectJob: () => void;
 }
 
-export default function JobDetails({job , cancelSelectJob}:Props){
+export default function JobDetails({ job, cancelSelectJob }: Props) {
 
-    return(
-       <Card fluid>
-           <Image src={`/assets/categoryImages/${job.title}.png`} />
-           <Card.Content >
-               <Card.Header>{job.title}</Card.Header>
-               <Card.Meta>
-                   <span> {job.date} </span>
-               </Card.Meta>
-               <Card.Description>
-                   {job.description}
-                   
-               </Card.Description>
-           </Card.Content>
-           <Card.Content extra>
-               <Button.Group widths ='2'>
-                   <Button onClick ={cancelSelectJob} basic color = 'black' content ='Go Back' />
+    return (
+        <Card fluid>
+            <Card.Header>
+                <CanvasView />
+            </Card.Header>
+            <Image src={`/assets/categoryImages/${job.title}.png`} />
+            <Card.Content >
+                <Card.Header>{job.title}</Card.Header>
+                <Card.Meta>
+                    <span> {job.date} </span>
+                </Card.Meta>
+                <Card.Description>
+                    {job.description}
 
-               </Button.Group>
+                </Card.Description>
+            </Card.Content>
+            <Card.Content extra>
+                <Button.Group widths='2'>
+                    <Button onClick={cancelSelectJob} basic color='black' content='Go Back' />
 
-           </Card.Content>
-       </Card> 
+                </Button.Group>
+
+            </Card.Content>
+        </Card>
     )
 }
