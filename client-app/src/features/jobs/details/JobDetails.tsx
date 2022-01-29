@@ -3,6 +3,7 @@ import { Button, Card, Image, Grid } from 'semantic-ui-react';
 import { Job } from '../../../app/models/job';
 import CanvasView from '../../../app/components/CanvasView.jsx';
 import { Link } from "react-router-dom";
+import './style.css';
 interface Props {
     job: Job;
     cancelSelectJob: () => void;
@@ -44,20 +45,22 @@ export default function JobDetails({ job, cancelSelectJob }: Props) {
         <Card fluid>
             <Card.Header>
                 <Link to="/geometry-view">
-                    <Grid columns={3} style={{
-                        margin: "0px"
+                    <Grid columns={2} style={{
+                        margin: "0px",
+                        overflowY: "scroll"
                     }}>
                         <Grid.Row>
-                            {[0, 1, 2, 3, 4].map(item => (
+                            {[0, 1].map(item => (
                                 <Grid.Column style={{ paddingBottom: "4px" }}>
                                     <CanvasView
                                         canvasWidth={100}
                                         canvasHeight={100}
-                                        sideCanvasWidth={50}
+                                        sideCanvasWidth={100}
                                         sideCanvasHeight={100}
                                         xmlStringState={xmlStringState}
                                         loading={xmlLoading}
                                         canvasColor="#fff"
+                                        shapeText={false}
                                     />
                                 </Grid.Column>
                             ))}

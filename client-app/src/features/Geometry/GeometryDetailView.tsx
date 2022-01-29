@@ -47,11 +47,13 @@ function GeometryDetailView() {
             <CanvasView
                 canvasWidth={window.innerWidth / 3}
                 canvasHeight={window.innerWidth / 3}
-                sideCanvasWidth={window.innerWidth / 3 / 2}
+                sideCanvasWidth={window.innerWidth / 3}
                 sideCanvasHeight={window.innerWidth / 3}
                 xmlStringState={xmlStringState}
                 loading={xmlLoading}
                 canvasColor="#fff"
+                column={3}
+                shapeText={true}
             />
         </div>
     )

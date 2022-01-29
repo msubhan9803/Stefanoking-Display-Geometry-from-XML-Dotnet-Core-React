@@ -9,6 +9,7 @@ import { Dimmer, Loader, Image, Segment } from 'semantic-ui-react'
 import Line from './Line.jsx';
 import CircleGeometry from './Circle.jsx';
 import ChildCanvas from './ChildCanvas.jsx';
+import { Button, Grid } from 'semantic-ui-react';
 import './style.css';
 import { arrayMin, arrayMax } from '../../helpers/arrayHelper';
 
@@ -20,10 +21,14 @@ export default function CanvasView(props) {
     loading,
     canvasColor,
     sideCanvasWidth,
-    sideCanvasHeight
+    sideCanvasHeight,
+    column,
+    shapeText
   } = props;
   const [geometryListState, setGeometryListState] = useState([]);
   const [individualShapeState, setIndividualShape] = useState([]);
+  const [geometryNameDataState, setGeometryNameData] = useState([]);
+  const [shapeAngleState, setShapeAngleState] = useState([]);
   const [viewPortState, setViewPortState] = useState({
     center: {
       X: 0,
@@ -48,20 +53,23 @@ export default function CanvasView(props) {
     parser.parseStringPromise(xmlString).then(function (result) {
       let parts = result["Sheet"]["Parts"][0]["Part"];
 
+      let partsRef = result["Sheet"]["PartReferences"][0]["PartReference"]; // for angle
+
       let tempList = [];// contains parsed each geometry individual
       let shapeList = []; // contains parsed shapes
       let contoursList = []; // contains parsed shapes with in each contour
+      let contoursDataList = []; // contains parsed shapes data with in each contour
+      let shapesAngleList = []; // contains parsed shapes data with in each contour
       for (let contoursIndex = 0; contoursIndex < parts.length; contoursIndex++) {
         const contours = parts[contoursIndex]["Contours"];
+        const contoursData = parts[contoursIndex]["$"];
 
         for (let contourIndex = 0; contourIndex < contours.length; contourIndex++) {
           const contour = contours[contourIndex]["Contour"];
-          console.log("contour: " + contourIndex, contour)
           let contourArr = [];
 
           for (let shapeIndex = 0; shapeIndex < contour.length; shapeIndex++) {
             const shape = contour[shapeIndex]["Path"][0];
-            console.log("shape: " + shapeIndex, shape)
             let shapeArr = []
             if (shapeIndex == 0) {
               if (Object.keys(shape).every(val => val == "Line")) {
@@ -105,7 +113,6 @@ export default function CanvasView(props) {
             } else if (shapeIndex > 0) {
               // Here we will calculate center point of child shapes
               let parentShape = null;
-              console.log("here shapeList: ", shapeList)
               for (let index = 0; index < shapeList.length; index++) {
                 const shape = shapeList[index];
                 if (
@@ -138,7 +145,6 @@ export default function CanvasView(props) {
                   ])
                 }
               }
-              console.log("parentCoordinates: ", parentCoordinates)
               let parentCenterCoordinates = getCenterCoord(parentCoordinates)
 
               if (Object.keys(shape).every(val => val == "Line")) {
@@ -150,9 +156,6 @@ export default function CanvasView(props) {
                   let endX = parseInt(line["End"][0]['$']['X']);
                   let endY = parseInt(line["End"][0]['$']['Y']);
                   let endZ = parseInt(line["End"][0]['$']['Z']);
-
-                  console.log('startX: ', startX)
-                  console.log('endX: ', endX)
                   let distanceX = (startX + endX) / 2;
                   let distanceY = (startY + endY) / 2;
                   let distanceZ = (startZ + endZ) / 2;
@@ -185,8 +188,6 @@ export default function CanvasView(props) {
                       Z: parentCenterCoordinates[2],
                     }
                   }
-
-                  console.log("temp: ", temp)
 
                   shapeArr.push(temp)
                   tempList.push(temp)
@@ -221,7 +222,15 @@ export default function CanvasView(props) {
           }
 
           contoursList.push(contourArr)
+          contoursDataList.push(contoursData)
         }
+      }
+
+      // for angle
+      for (let index = 0; index < partsRef.length; index++) {
+        const ref = partsRef[index]["$"];
+        console.log("ref: ", ref)
+        shapesAngleList.push(ref.angle)
       }
 
       let x = [];
@@ -262,23 +271,13 @@ export default function CanvasView(props) {
       // Set Min max
       setViewPortState(temp);
 
-      console.log("contoursList: ", contoursList)
-      console.log("shapeList: ", shapeList)
-      console.log("tempList: ", tempList)
-
       setIndividualShape(contoursList);
+      setGeometryNameData(contoursDataList);
       setGeometryListState(tempList)
+      setShapeAngleState(shapesAngleList)
 
-      // for (let index = 0; index < contoursList.length; index++) {
-      //   const contours = contoursList[index];
-      //   for (let index = 0; index < contours.length; index++) {
-      //     const shape = contours[index];
-      //     for (let index = 0; index < shape.length; index++) {
-      //       const geometry = shape[index];
-      //       console.log(geometry)
-      //     }
-      //   }
-      // }
+      console.log("Name data: ", contoursDataList)
+      console.log("contoursList: ", contoursList)
     }).catch(function (err) {
       // Failed
     });
@@ -304,7 +303,11 @@ export default function CanvasView(props) {
   };
 
   return (
-    <>
+    <div style={{
+      backgroundColor: "#fff",
+      width: "100%",
+      height: "100%"
+    }}>
       {/* Main Canvas */}
       <div className="parent" style={{
         height: sizes.height,
@@ -312,7 +315,8 @@ export default function CanvasView(props) {
         backgroundColor: canvasColor,
         display: "flex",
         flexDirection: "row",
-        float: "left"
+        float: "left",
+        border: "2px solid #000"
       }}>
         {
           !loading ?
@@ -386,49 +390,65 @@ export default function CanvasView(props) {
       </div>
 
       {/* Side Canvas */}
-
-      <div style={{
+      <Grid columns={column ? column : 2} style={{
         height: sideCanvasHeight,
         width: sideCanvasWidth,
-        // backgroundColor: canvasColor,
-        display: "flex",
-        flexDirection: "column",
-        float: "left"
+        backgroundColor: "#fff"
       }}>
-        {
-          !loading ?
-            <>
-              {
-                individualShapeState.map((shape, stIndex) => (
-                  <>
-                    {
-                      <ChildCanvas
-                        state={shape}
-                        canvasWidth={100}
-                        canvasHeight={100}
-                        sideCanvasWidth={window.innerWidth / 3 / 2}
-                        sideCanvasHeight={window.innerWidth / 3}
-                        xmlStringState={xmlStringState}
-                        canvasColor="#fff"
-                      />
-                    }
-                  </>
-                ))
-              }
-            </>
-            : (
-              <div style={{
-                display: "flex",
-                flexDirection: "row",
-                justifyContent: 'center',
-                alignItems: "center",
-                height: "100%"
-              }}>
-                <Loader active inline />
-              </div>
-            )
-        }
-      </div>
-    </>
+        <Grid.Row>
+          {
+            !loading ?
+              <>
+                {
+                  individualShapeState.map((shape, stIndex) => (
+                    <>
+                      {
+                        <Grid.Column style={{ paddingBottom: "4px" }}>
+                          <div style={{ display: "flex", flexDirection: "column" }}>
+                            <ChildCanvas
+                              state={shape}
+                              // canvasWidth={sideCanvasHeight / 3}
+                              // canvasHeight={sideCanvasWidth / 3}
+                              canvasWidth={sideCanvasWidth / 4}
+                              canvasHeight={sideCanvasHeight / 4}
+                              sideCanvasWidth={window.innerWidth / 3 / 2}
+                              sideCanvasHeight={window.innerWidth / 3}
+                              xmlStringState={xmlStringState}
+                              canvasColor="#fff"
+                            />
+                            {
+                              shapeText && (
+                                <>
+                                  <div className="shape-details">
+                                    {geometryNameDataState[stIndex]?.code}
+                                  </div>
+                                  <div className="shape-details">
+                                    {geometryNameDataState[stIndex]?.order}
+                                  </div>
+                                </>
+                              )
+                            }
+                          </div>
+                        </Grid.Column>
+                      }
+                    </>
+                  ))
+                }
+              </>
+              : (
+                <div style={{
+                  display: "flex",
+                  flexDirection: "row",
+                  justifyContent: 'center',
+                  alignItems: "center",
+                  height: "100%"
+                }}>
+                  <Loader active inline />
+                </div>
+              )
+          }
+        </Grid.Row>
+      </Grid>
+    </div>
   );
 }

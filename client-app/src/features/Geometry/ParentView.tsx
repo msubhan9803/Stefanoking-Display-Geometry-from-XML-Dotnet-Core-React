@@ -45,36 +45,44 @@ const ParentView = () => {
                 // margin: "4px"
             }}>
                 {/* <Grid.Row> */}
-                {[0, 1, 2, 3, 4].map(item => (
+                {[0, 1].map(item => (
                     <Grid.Column>
                         <div style={{
                             border: "3px solid rgb(68 93 154)",
                             width: "100%",
-                            height: "100%",
+                            minHeight: "150px",
+                            display: "flex",
+                            flexDirection: "column"
                         }}>
-                            <CanvasView
-                                canvasWidth={100}
-                                canvasHeight={100}
-                                sideCanvasWidth={50}
-                                sideCanvasHeight={100}
-                                xmlStringState={xmlStringState}
-                                loading={xmlLoading}
-                                canvasColor="#fff"
-                            />
-                            <Link to="/geometry-detial-view">
-                                <Button style={{
-                                    color: "#fff !important",
-                                    backgroundColor: "transparent",
-                                    border: "2px solid rgb(68 93 154)",
-                                    float: "right",
-                                    padding: "5px",
-                                    marginTop: "8px",
-                                    marginBottom: "8px",
-                                    marginRight: "4px"
-                                }}>
-                                    More Info
-                                </Button>
-                            </Link>
+                            <div style={{padding: "16px", backgroundColor: "#fff"}}>
+                                <CanvasView
+                                    canvasWidth={100}
+                                    canvasHeight={100}
+                                    sideCanvasWidth={100}
+                                    sideCanvasHeight={100}
+                                    xmlStringState={xmlStringState}
+                                    loading={xmlLoading}
+                                    canvasColor="#fff"
+                                    column={3}
+                                    shapeText={false}
+                                />
+                            </div>
+                            <div>
+                                <Link to="/geometry-detial-view">
+                                    <Button style={{
+                                        color: "#fff !important",
+                                        backgroundColor: "transparent",
+                                        border: "2px solid rgb(68 93 154)",
+                                        float: "right",
+                                        padding: "5px",
+                                        marginTop: "8px",
+                                        marginBottom: "8px",
+                                        marginRight: "4px"
+                                    }}>
+                                        More Info
+                                    </Button>
+                                </Link>
+                            </div>
                         </div>
                     </Grid.Column>
                 ))}

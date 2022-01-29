@@ -1,0 +1,185 @@
+<?xml version="1.0"?>
+<Sheet material = "inox" thickness = "1.2" version ="1" dimx = "1200" dimy = "1200">
+  <Parts>
+        <Part code = "PartTest01" order = "Order1" customer = "Customer1" deliverydate = "28/01/2022">  
+            <!-- Geometric info of pieces i want to display -->
+            <Contours>
+                <Contour external = "1">
+                    <Path>
+                        <Line>
+                            <Start X = "0" Y ="0" Z = "0"/>
+                            <End X = "100" Y ="0" Z = "0"/>
+                        </Line>
+                        <Line>
+                            <Start X = "100" Y ="0" Z = "0"/>
+                            <End X = "100" Y ="100" Z = "0"/>
+                        </Line>
+                        <Line>
+                            <Start X = "100" Y ="100" Z = "0"/>
+                            <End X = "0" Y ="100" Z = "0"/>
+                        </Line>
+                        <Line>
+                            <Start X = "0" Y ="100" Z = "0"/>
+                            <End X = "0" Y ="0" Z = "0"/>
+                        </Line>
+                    </Path>
+                </Contour>
+            </Contours>
+        </Part>
+
+         <Part code = "PartTest02" order = "Order02" customer = "Customer2" deliverydate = "28/01/2022"> 
+            <!-- Geometric info of pieces i want to display -->
+            <Contours>
+                <Contour external = "1">
+                    <Path>
+                        <Line>
+                            <Start X = "70" Y ="90" Z = "0"/>
+                            <End X = "50" Y ="70" Z = "0"/>
+                        </Line>
+                        <Line>
+                            <Start X = "50" Y ="70" Z = "0"/>
+                            <End X = "70" Y ="50" Z = "0"/>
+                        </Line>
+                        <Line>
+                            <Start X = "70" Y ="50" Z = "0"/>
+                            <End X = "90" Y ="70" Z = "0"/>
+                        </Line>
+                        <Line>
+                            <Start X = "90" Y ="70" Z = "0"/>
+                            <End X = "70" Y ="90" Z = "0"/>
+                        </Line>
+                    </Path>
+                </Contour>
+
+                <Contour external = "0">
+                    <Path>
+                        <Arc>
+                            <Center X = "0" Y ="0" Z = "0"/>
+                            <Radius>10.0</Radius>
+                            <Angle>360.0</Angle>
+                        </Arc>
+                    </Path>
+                </Contour>
+            </Contours>
+        </Part>
+
+        <Part code = "PartTest03" order = "Order03" customer = "Customer3" deliverydate = "28/01/2022">
+            <!-- Geometric info of pieces i want to display -->
+            <Contours>
+                <Contour external = "1">
+                    <Path>
+                        <Line>
+                            <Start X = "20" Y ="90" Z = "0"/>
+                            <End X = "20" Y ="70" Z = "0"/>
+                        </Line>
+                        <Line>
+                            <Start X = "20" Y ="70" Z = "0"/>
+                            <End X = "40" Y ="70" Z = "0"/>
+                        </Line>
+                        <Line>
+                            <Start X = "40" Y ="70" Z = "0"/>
+                            <End X = "20" Y ="90" Z = "0"/>
+                        </Line>
+                    </Path>
+                </Contour>
+            </Contours>
+        </Part>
+
+        <Part code = "PartTest04" order = "Order04" customer = "Customer4" deliverydate = "28/01/2022">
+            <!-- Geometric info of pieces i want to display -->
+            <Contours>
+                <Contour external = "1">
+                    <Path>
+                        <Line>
+                            <Start X = "50" Y ="60" Z = "0"/>
+                            <End X = "30" Y ="20" Z = "0"/>
+                        </Line>
+                        <Line>
+                            <Start X = "30" Y ="20" Z = "0"/>
+                            <End X = "70" Y ="20" Z = "0"/>
+                        </Line>
+                        <Line>
+                            <Start X = "70" Y ="20" Z = "0"/>
+                            <End X = "50" Y ="60" Z = "0"/>
+                        </Line>
+                    </Path>
+                </Contour>
+
+                <Contour external = "0">
+                    <Path>
+                        <Arc>
+                            <Center X = "0" Y ="0" Z = "0"/>
+                            <Radius>5.0</Radius>
+                            <Angle>360.0</Angle>
+                        </Arc>
+                    </Path>
+                </Contour>
+            </Contours>
+        </Part>
+
+        <Part code = "PartTest05" order = "Order05" customer = "Customer5" deliverydate = "28/01/2022">
+            <!-- Geometric info of pieces i want to display -->
+            <Contours>
+                <Contour external = "1">
+                    <Path>
+                        <Line>
+                            <Start X = "75.49" Y ="20.72" Z = "0"/>
+                            <End X = "70" Y ="30" Z = "0"/>
+                        </Line>
+                        <Line>
+                            <Start X = "70" Y ="30" Z = "0"/>
+                            <End X = "80" Y ="40" Z = "0"/>
+                        </Line>
+                        <Line>
+                            <Start X = "80" Y ="40" Z = "0"/>
+                            <End X = "90" Y ="30" Z = "0"/>
+                        </Line>
+                        <Line>
+                            <Start X = "90" Y ="30" Z = "0"/>
+                            <End X = "85.5" Y ="20.72" Z = "0"/>
+                        </Line>
+                        <Line>
+                            <Start X = "85.5" Y ="20.72" Z = "0"/>
+                            <End X = "75.49" Y ="20.72" Z = "0"/>
+                        </Line>
+                    </Path>
+                </Contour>
+
+                <Contour external = "0">
+                    <Path>
+                        <Arc>
+                            <Center X = "0" Y ="0" Z = "0"/>
+                            <Radius>2.5 </Radius>
+                            <Angle>360.0</Angle>
+                        </Arc>
+                    </Path>
+                </Contour>
+
+                <Contour external = "1">
+                    <Path>
+                        <Line>
+                            <Start X = "79.82" Y ="38.29" Z = "0"/>
+                            <End X = "73.88" Y ="25.56" Z = "0"/>
+                        </Line>
+                        <Line>
+                            <Start X = "73.88" Y ="25.56" Z = "0"/>
+                            <End X = "85.98" Y ="25.42" Z = "0"/>
+                        </Line>
+                        <Line>
+                            <Start X = "85.98" Y ="25.42" Z = "0"/>
+                            <End X = "79.82" Y ="38.29" Z = "0"/>
+                        </Line>
+                    </Path>
+                </Contour>
+            </Contours>
+        </Part>
+  </Parts>
+  
+  <PartReferences>
+      <PartReference PartCode = "PartTest01"   posx = "100" posy = "100" angle = "0" mirror = "0"></PartReference>
+      <PartReference PartCode = "PartTest01"   posx = "700" posy = "700" angle = "30" mirror = "0"></PartReference>
+      <PartReference PartCode = "PartTest02"   posx = "300" posy = "300" angle = "0" mirror = "0"></PartReference>
+      <PartReference PartCode = "PartTest03"   posx = "300" posy = "600" angle = "0" mirror = "0"></PartReference>
+  </PartReferences>
+
+</Sheet>

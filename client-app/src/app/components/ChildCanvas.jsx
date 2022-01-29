@@ -85,7 +85,6 @@ export default function ChildCanvas(props) {
     });
 
     useEffect(() => {
-        console.log(state)
         let x = [];
         let y = [];
         let z = [];
@@ -124,7 +123,6 @@ export default function ChildCanvas(props) {
             },
             zoom: zoom
         }
-        console.log("temp: ", temp)
         // Set Min max
         setViewPortState(temp);
     }, []);
