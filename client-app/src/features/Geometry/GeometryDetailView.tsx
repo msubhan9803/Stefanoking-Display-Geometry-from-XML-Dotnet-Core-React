@@ -42,7 +42,7 @@ function GeometryDetailView() {
     return (
         <div id="container" style={{
             width: "100%",
-            height: "100%"
+            height: "auto"
         }}>
             <CanvasView
                 canvasWidth={window.innerWidth / 3}
