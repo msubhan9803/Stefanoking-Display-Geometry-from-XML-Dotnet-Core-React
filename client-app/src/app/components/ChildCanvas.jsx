@@ -80,8 +80,8 @@ export default function ChildCanvas(props) {
         }
     ]);
     const [sizes, setSizes] = useState({
-      width: canvasWidth,
-      height: canvasHeight
+        width: canvasWidth,
+        height: canvasHeight
     });
 
     useEffect(() => {
@@ -90,18 +90,21 @@ export default function ChildCanvas(props) {
         let y = [];
         let z = [];
         for (let index = 0; index < state.length; index++) {
-            const elem = state[index];
-            if (elem.type == "line") {
-                x.push(parseFloat(elem.start.X))
-                x.push(parseFloat(elem.end.X))
-                y.push(parseFloat(elem.start.Y))
-                y.push(parseFloat(elem.end.Y))
-                z.push(parseFloat(elem.start.Z))
-                z.push(parseFloat(elem.end.Z))
-            } else {
-                x.push(parseFloat(elem.center.X))
-                y.push(parseFloat(elem.center.Y))
-                z.push(parseFloat(elem.center.Z))
+            const shape = state[index];
+            for (let index = 0; index < shape.length; index++) {
+                const elem = shape[index];
+                if (elem.type == "line") {
+                    x.push(parseFloat(elem.start.X))
+                    x.push(parseFloat(elem.end.X))
+                    y.push(parseFloat(elem.start.Y))
+                    y.push(parseFloat(elem.end.Y))
+                    z.push(parseFloat(elem.start.Z))
+                    z.push(parseFloat(elem.end.Z))
+                } else {
+                    x.push(parseFloat(elem.center.X))
+                    y.push(parseFloat(elem.center.Y))
+                    z.push(parseFloat(elem.center.Z))
+                }
             }
         }
         let xMin = arrayMin(x)
@@ -144,46 +147,52 @@ export default function ChildCanvas(props) {
                     ]}
                 >
                     {
-                        state.map((geometry, gIndex) => (
+                        state.map((shape, gIndex) => (
                             <>
                                 {
-                                    geometry.type == "line" ?
-                                        geometry.center ?
-                                            <Line
-                                                key={`${gIndex}`}
-                                                start={[
-                                                    geometry.start.X,
-                                                    geometry.start.Y,
-                                                    geometry.start.Z
-                                                ]}
-                                                end={[
-                                                    geometry.end.X,
-                                                    geometry.end.Y,
-                                                    geometry.end.Z
-                                                ]}
-                                                center={geometry.center}
-                                            />
-                                            :
-                                            <Line
-                                                key={`${gIndex}`}
-                                                start={[
-                                                    geometry.start.X,
-                                                    geometry.start.Y,
-                                                    geometry.start.Z
-                                                ]}
-                                                end={[
-                                                    geometry.end.X,
-                                                    geometry.end.Y,
-                                                    geometry.end.Z
-                                                ]}
-                                            />
-                                        :
-                                        <CircleGeometry
-                                            key={`${gIndex}`}
-                                            radius={geometry.radius}
-                                            center={geometry.center}
-                                            angle={degrees_to_radians(geometry.angle)}
-                                        />
+                                    shape.map((geometry, index) => (
+                                        <>
+                                            {
+                                                geometry.type == "line" ?
+                                                    geometry.center ?
+                                                        <Line
+                                                            key={`${gIndex}`}
+                                                            start={[
+                                                                geometry.start.X,
+                                                                geometry.start.Y,
+                                                                geometry.start.Z
+                                                            ]}
+                                                            end={[
+                                                                geometry.end.X,
+                                                                geometry.end.Y,
+                                                                geometry.end.Z
+                                                            ]}
+                                                            center={geometry.center}
+                                                        />
+                                                        :
+                                                        <Line
+                                                            key={`${gIndex}`}
+                                                            start={[
+                                                                geometry.start.X,
+                                                                geometry.start.Y,
+                                                                geometry.start.Z
+                                                            ]}
+                                                            end={[
+                                                                geometry.end.X,
+                                                                geometry.end.Y,
+                                                                geometry.end.Z
+                                                            ]}
+                                                        />
+                                                    :
+                                                    <CircleGeometry
+                                                        key={`${gIndex}`}
+                                                        radius={geometry.radius}
+                                                        center={geometry.center}
+                                                        angle={degrees_to_radians(geometry.angle)}
+                                                    />
+                                            }
+                                        </>
+                                    ))
                                 }
                             </>
                         ))

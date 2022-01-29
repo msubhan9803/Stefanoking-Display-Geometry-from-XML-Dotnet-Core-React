@@ -388,8 +388,8 @@ export default function CanvasView(props) {
       {/* Side Canvas */}
 
       <div style={{
-        // height: sideCanvasHeight,
-        // width: sideCanvasWidth,
+        height: sideCanvasHeight,
+        width: sideCanvasWidth,
         // backgroundColor: canvasColor,
         display: "flex",
         flexDirection: "column",
@@ -402,19 +402,15 @@ export default function CanvasView(props) {
                 individualShapeState.map((shape, stIndex) => (
                   <>
                     {
-                      shape.map((element, sIndex) => (
-                        <>
-                          <ChildCanvas
-                            state={element}
-                            canvasWidth={100}
-                            canvasHeight={100}
-                            sideCanvasWidth={window.innerWidth / 3 / 2}
-                            sideCanvasHeight={window.innerWidth / 3}
-                            xmlStringState={xmlStringState}
-                            canvasColor="#fff"
-                          />
-                        </>
-                      ))
+                      <ChildCanvas
+                        state={shape}
+                        canvasWidth={100}
+                        canvasHeight={100}
+                        sideCanvasWidth={window.innerWidth / 3 / 2}
+                        sideCanvasHeight={window.innerWidth / 3}
+                        xmlStringState={xmlStringState}
+                        canvasColor="#fff"
+                      />
                     }
                   </>
                 ))
