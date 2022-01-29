@@ -3,87 +3,27 @@ import * as THREE from "three";
 import { Canvas } from "@react-three/fiber";
 import { a, useSpring } from "@react-spring/three";
 import xml2js from 'xml2js';
-import degrees_to_radians from '../../helpers/convertDegToRad.js';
+import degrees_to_radians from '../../helpers/convertDegToRad.ts';
 import { useThree } from '@react-three/fiber';
+import { Dimmer, Loader, Image, Segment } from 'semantic-ui-react'
+import Line from './Line.jsx';
+import CircleGeometry from './Circle.jsx';
+import ChildCanvas from './ChildCanvas.jsx';
 import './style.css';
+import { arrayMin, arrayMax } from '../../helpers/arrayHelper';
 
-function Line({ start, end, center }) {
-  const ref = useRef();
-  useLayoutEffect(() => {
-    ref.current.geometry.setFromPoints(
-      [start, end].map((point) => new THREE.Vector3(...point))
-    );
-  }, [start, end]);
-
-  return (
-    // <>
-    //   {
-    //     center ?
-    //       <mesh visible userData={{ test: "hello" }} position={[
-    //         center.X,
-    //         center.Y,
-    //         center.Z
-    //       ]}>
-    //         <line ref={ref}>
-    //           <bufferGeometry />
-    //           <lineBasicMaterial color="hotpink" />
-    //         </line>
-    //       </mesh>
-    //       :
-    //       <line ref={ref}>
-    //         <bufferGeometry />
-    //         <lineBasicMaterial color="hotpink" />
-    //       </line>
-    //   }
-    // </>
-    <line ref={ref}>
-      <bufferGeometry />
-      <lineBasicMaterial color="hotpink" />
-    </line>
-
-  );
-}
-
-function Sphere() {
-  return (
-    <mesh visible userData={{ test: "hello" }} position={[5 - Math.random() * 10, 5 - Math.random() * 10, 5 - Math.random() * 10]}>
-      <sphereGeometry attach="geometry" args={[5, 16, 16]} />
-      {/* <meshStandardMaterial
-        attach="material"
-        color="white"
-        transparent
-        roughness={0.1}
-        metalness={0.1}
-      /> */}
-    </mesh>
-  );
-}
-
-function CircleGeometry(props) {
-  const { radius, center, angle } = props;
-
-  return (
-    <mesh visible userData={{ test: "hello" }} position={[
-      center.X,
-      center.Y,
-      center.Z
-    ]}>
-      <circleGeometry attach="geometry" args={[radius, 78, 0, angle]} />
-      <meshStandardMaterial
-        attach="material"
-        color="white"
-        transparent
-        roughness={0.1}
-        metalness={0.1}
-      />
-    </mesh>
-  );
-}
-
-export default function CanvasView() {
-  const NUM = 30;
-  const spheres = new Array(NUM).fill();
-  const [geometryList, setGeometryList] = useState([]);
+export default function CanvasView(props) {
+  const {
+    canvasWidth,
+    canvasHeight,
+    xmlStringState,
+    loading,
+    canvasColor,
+    sideCanvasWidth,
+    sideCanvasHeight
+  } = props;
+  const [geometryListState, setGeometryListState] = useState([]);
+  const [individualShapeState, setIndividualShape] = useState([]);
   const [viewPortState, setViewPortState] = useState({
     center: {
       X: 0,
@@ -92,87 +32,15 @@ export default function CanvasView() {
     zoom: 0
   });
   const [sizes, setSizes] = useState({
-    width: 100,
-    height: 100
+    width: canvasWidth,
+    height: canvasHeight
   });
 
-  // const {
-  //   gl, // WebGL renderer
-  //   scene, // Default scene
-  //   camera, // Default camera
-  //   raycaster, // Default raycaster
-  //   size, // Bounds of the view (which stretches 100% and auto-adjusts)
-  //   viewport, // Bounds of the viewport in 3d units + factor (size/viewport)
-  //   aspect, // Aspect ratio (size.width / size.height)
-  //   mouse, // Current, centered, normalized 2D mouse coordinates
-  //   // raycaster, // Intternal raycaster instance
-  //   clock, // THREE.Clock (useful for useFrame deltas)
-  //   invalidate, // Invalidates a single frame (for <Canvas invalidateFrameloop />)
-  //   intersect, // Calls onMouseMove handlers for objects underneath the cursor
-  //   setDefaultCamera, // Sets the default camera
-  // } = useThree();
-
-  var coords = [
-    [0, 0, 0],
-    [100, 0, 0],
-    [100, 100, 0],
-    // [0, 100, 0],
-  ];
-
-  const center = function (arr) {
-    var minX, maxX, minY, maxY, minZ, maxZ;
-    for (var i = 0; i < arr.length; i++) {
-      var x = arr[i][0], y = arr[i][1], z = arr[i][2];
-      minX = (x < minX || minX == null) ? x : minX;
-      maxX = (x > maxX || maxX == null) ? x : maxX;
-      minY = (y < minY || minY == null) ? y : minY;
-      maxY = (y > maxY || maxY == null) ? y : maxY;
-      if (minZ > 0 && maxZ > 0) {
-        minZ = (y < minZ || minZ == null) ? y : minZ;
-        maxZ = (y > maxZ || maxZ == null) ? y : maxZ;
-      } else {
-        minZ = 0;
-        maxZ = 0;
-      }
-    }
-    return [(minX + maxX) / 2, (minY + maxY) / 2, (minZ + maxZ) / 2];
-  };
-
-  // const setCamera = () => {
-  //   camera.top = (.95*camera.top);
-  //   camera.bottom = (.95*camera.bottom);
-  //   camera.left = (.95*camera.left);
-  //   camera.right = (.95*camera.right);
-  // }
-
   useEffect(() => {
-    // Setting camera
-    // setCamera();
-
-    // Load XML
-    const url = 'http://localhost:5000/Example';
-    var xhr = new XMLHttpRequest;
-    xhr.open('GET', url);
-
-    // If specified, responseType must be empty string or "document"
-    xhr.responseType = 'document';
-
-    // Force the response to be parsed as XML
-    xhr.overrideMimeType('text/xml');
-
-    xhr.onload = function () {
-      if (xhr.readyState === xhr.DONE && xhr.status === 200) {
-        // console.log(xhr.response);
-        // console.log(xhr.responseXML);
-        const serializer = new XMLSerializer();
-        const xmlStr = serializer.serializeToString(xhr.responseXML);
-
-        parseFile(xmlStr)
-      }
-    };
-
-    xhr.send();
-  }, []);
+    if (xmlStringState != "") {
+      parseFile(xmlStringState)
+    }
+  }, [xmlStringState]);
 
   const parseFile = xmlString => {
     var parser = new xml2js.Parser();
@@ -236,7 +104,6 @@ export default function CanvasView() {
               }
             } else if (shapeIndex > 0) {
               // Here we will calculate center point of child shapes
-
               let parentShape = null;
               console.log("here shapeList: ", shapeList)
               for (let index = 0; index < shapeList.length; index++) {
@@ -272,7 +139,7 @@ export default function CanvasView() {
                 }
               }
               console.log("parentCoordinates: ", parentCoordinates)
-              let parentCenterCoordinates = center(parentCoordinates)
+              let parentCenterCoordinates = getCenterCoord(parentCoordinates)
 
               if (Object.keys(shape).every(val => val == "Line")) {
                 for (let lineIndex = 0; lineIndex < shape["Line"].length; lineIndex++) {
@@ -357,12 +224,6 @@ export default function CanvasView() {
         }
       }
 
-      console.log("contoursList: ", contoursList)
-      console.log("shapeList: ", shapeList)
-      console.log("tempList: ", tempList)
-
-      setGeometryList(tempList)
-
       let x = [];
       let y = [];
       let z = [];
@@ -394,126 +255,184 @@ export default function CanvasView() {
       let temp = {
         center: {
           X: (xMin + xMax) > 0 ? -(xMin + xMax) / 2 : (xMin + xMax) / 2,
-          Y: (yMin + yMax) > 0 ? -(yMin + yMax) / 2 : (yMin + yMax) /2
+          Y: (yMin + yMax) > 0 ? -(yMin + yMax) / 2 : (yMin + yMax) / 2
         },
         zoom: zoom
       }
       // Set Min max
       setViewPortState(temp);
+
+      console.log("contoursList: ", contoursList)
+      console.log("shapeList: ", shapeList)
+      console.log("tempList: ", tempList)
+
+      setIndividualShape(contoursList);
+      setGeometryListState(tempList)
+
+      // for (let index = 0; index < contoursList.length; index++) {
+      //   const contours = contoursList[index];
+      //   for (let index = 0; index < contours.length; index++) {
+      //     const shape = contours[index];
+      //     for (let index = 0; index < shape.length; index++) {
+      //       const geometry = shape[index];
+      //       console.log(geometry)
+      //     }
+      //   }
+      // }
     }).catch(function (err) {
       // Failed
     });
   }
 
-  // const sizes = {
-  //   width: 300,
-  //   height: 300
-  // };
-
-  const arrayMin = (arr) => {
-    return arr.reduce((p, v) => {
-      return (p < v ? p : v);
-    });
-  }
-
-  const arrayMax = (arr) => {
-    return arr.reduce((p, v) => {
-      return (p > v ? p : v);
-    });
-  }
+  const getCenterCoord = function (arr) {
+    var minX, maxX, minY, maxY, minZ, maxZ;
+    for (var i = 0; i < arr.length; i++) {
+      var x = arr[i][0], y = arr[i][1], z = arr[i][2];
+      minX = (x < minX || minX == null) ? x : minX;
+      maxX = (x > maxX || maxX == null) ? x : maxX;
+      minY = (y < minY || minY == null) ? y : minY;
+      maxY = (y > maxY || maxY == null) ? y : maxY;
+      if (minZ > 0 && maxZ > 0) {
+        minZ = (y < minZ || minZ == null) ? y : minZ;
+        maxZ = (y > maxZ || maxZ == null) ? y : maxZ;
+      } else {
+        minZ = 0;
+        maxZ = 0;
+      }
+    }
+    return [(minX + maxX) / 2, (minY + maxY) / 2, (minZ + maxZ) / 2];
+  };
 
   return (
-    <div className="parent" style={{
-      height: sizes.height,
-      width: sizes.width
-    }}>
-      {/* <Canvas orthographic camera={{ zoom: 10 }} style={{ backgroundColor: "white" }}> */}
-      <Canvas orthographic camera={{ zoom: viewPortState.zoom }} className="canvas">
-        {/* <ambientLight intensity={0.5} />
-      <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} />
-      <pointLight position={[-10, -10, -10]} /> */}
-        {/* <Line start={[0, 0, 0]} end={[100, 0, 0]} />
-        <Line start={[0, 0, 0]} end={[0, 100, 0]} />
-
-        <a.mesh>
-          <sphereBufferGeometry start={[0, 0, 0]} attach="geometry" args={[10, 32, 32]} />
-          <CircleGeometry
-            radius={5}
-            center={{
-              X: 0,
-              Y: 0,
-              Z: 0
-            }}
-            angle={degrees_to_radians(360)}
-          />
-        </a.mesh> */}
-
-        {/* <Sphere /> */}
-        {/* <CircleGeometry /> */}
-        {/* <perspectiveCamera
-          fov={50}
-          aspect={sizes.width / sizes.height}
-          // change position of camera
-          position={[0, 0, 0]}
-          aspect={10}
-          near={0.1}
-          far={100}
-        > */}
-        <mesh visible
-        position={[
-          viewPortState.center.X,
-          viewPortState.center.Y,
-          0
-        ]}
-        >
-          {
-            geometryList.map((child, index) => (
-              <>
+    <>
+      {/* Main Canvas */}
+      <div className="parent" style={{
+        height: sizes.height,
+        width: sizes.width,
+        backgroundColor: canvasColor,
+        display: "flex",
+        flexDirection: "row",
+        float: "left"
+      }}>
+        {
+          !loading ?
+            <Canvas orthographic camera={{ zoom: viewPortState.zoom }} className="canvas">
+              <mesh visible
+                position={[
+                  viewPortState.center.X,
+                  viewPortState.center.Y,
+                  0
+                ]}
+              >
                 {
-                  child.type == "line" ?
-                    child.center ?
-                      <Line
-                        key={index}
-                        start={[
-                          child.start.X,
-                          child.start.Y,
-                          child.start.Z
-                        ]}
-                        end={[
-                          child.end.X,
-                          child.end.Y,
-                          child.end.Z
-                        ]}
-                        center={child.center}
-                      />
-                      :
-                      <Line
-                        key={index}
-                        start={[
-                          child.start.X,
-                          child.start.Y,
-                          child.start.Z
-                        ]}
-                        end={[
-                          child.end.X,
-                          child.end.Y,
-                          child.end.Z
-                        ]}
-                      />
-                    :
-                    <CircleGeometry
-                      key={index}
-                      radius={child.radius}
-                      center={child.center}
-                      angle={degrees_to_radians(child.angle)}
-                    />
+                  geometryListState.map((child, index) => (
+                    <>
+                      {
+                        child.type == "line" ?
+                          child.center ?
+                            <Line
+                              key={index}
+                              start={[
+                                child.start.X,
+                                child.start.Y,
+                                child.start.Z
+                              ]}
+                              end={[
+                                child.end.X,
+                                child.end.Y,
+                                child.end.Z
+                              ]}
+                              center={child.center}
+                            />
+                            :
+                            <Line
+                              key={index}
+                              start={[
+                                child.start.X,
+                                child.start.Y,
+                                child.start.Z
+                              ]}
+                              end={[
+                                child.end.X,
+                                child.end.Y,
+                                child.end.Z
+                              ]}
+                            />
+                          :
+                          <CircleGeometry
+                            key={index}
+                            radius={child.radius}
+                            center={child.center}
+                            angle={degrees_to_radians(child.angle)}
+                          />
+                      }
+                    </>
+                  ))
                 }
-              </>
-            ))
-          }
-        </mesh>
-        {/* </perspectiveCamera> */}
-      </Canvas >
-    </div>
+              </mesh>
+            </Canvas >
+            : (
+              <div style={{
+                display: "flex",
+                flexDirection: "row",
+                justifyContent: 'center',
+                alignItems: "center",
+                height: "100%"
+              }}>
+                <Loader active inline />
+              </div>
+            )
+        }
+      </div>
+
+      {/* Side Canvas */}
+
+      <div style={{
+        // height: sideCanvasHeight,
+        // width: sideCanvasWidth,
+        // backgroundColor: canvasColor,
+        display: "flex",
+        flexDirection: "column",
+        float: "left"
+      }}>
+        {
+          !loading ?
+            <>
+              {
+                individualShapeState.map((shape, stIndex) => (
+                  <>
+                    {
+                      shape.map((element, sIndex) => (
+                        <>
+                          <ChildCanvas
+                            state={element}
+                            canvasWidth={100}
+                            canvasHeight={100}
+                            sideCanvasWidth={window.innerWidth / 3 / 2}
+                            sideCanvasHeight={window.innerWidth / 3}
+                            xmlStringState={xmlStringState}
+                            canvasColor="#fff"
+                          />
+                        </>
+                      ))
+                    }
+                  </>
+                ))
+              }
+            </>
+            : (
+              <div style={{
+                display: "flex",
+                flexDirection: "row",
+                justifyContent: 'center',
+                alignItems: "center",
+                height: "100%"
+              }}>
+                <Loader active inline />
+              </div>
+            )
+        }
+      </div>
+    </>
   );
 }

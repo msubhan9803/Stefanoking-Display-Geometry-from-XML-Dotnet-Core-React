@@ -20,11 +20,11 @@ export default function JobDashboard({jobs , selectJob , selectedJob , cancelSel
 
         <Grid>
 
-            <Grid.Column width = '7'>
+            <Grid.Column width = '4'>
                 <JobList jobs ={jobs} selectJob ={selectJob}/>
                 
             </Grid.Column>
-            <Grid.Column width = '6'>
+            <Grid.Column width = '8'>
                 {selectedJob &&
                 <JobDetails job = {selectedJob} cancelSelectJob={cancelSelectJob}/>}
             </Grid.Column>
